@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useContext, useReducer } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useReducer,
+  useCallback,
+  useMemo,
+} from 'react';
 import Header from './Header';
 import Menu from './Menu';
 import SpeakerData from './SpeakerData';
@@ -45,9 +52,9 @@ const Speakers = ({}) => {
     setSpeakingSunday(!speakingSunday);
   };
 
-  const speakerListFiltered = isLoading
-    ? []
-    : speakerList
+  const newSpeakerList = useMemo(
+    () =>
+      speakerList
         .filter(
           ({ sat, sun }) =>
             (speakingSaturday && sat) || (speakingSunday && sun),
@@ -60,9 +67,11 @@ const Speakers = ({}) => {
             return 1;
           }
           return 0;
-        });
+        }),
+    [speakingSaturday, speakingSunday, speakerList],
+  );
 
-  const heartFavoriteHandler = (e, favoriteValue) => {
+  const heartFavoriteHandler = useCallback((e, favoriteValue) => {
     e.preventDefault();
     const sessionId = parseInt(e.target.attributes['data-sessionid'].value);
 
@@ -70,15 +79,9 @@ const Speakers = ({}) => {
       type: favoriteValue === true ? 'favorite' : 'unfavorite',
       sessionId,
     });
-    // setSpeakerList(
-    //   speakerList.map((item) => {
-    //     if (item.id === sessionId) {
-    //       return { ...item, favorite: favoriteValue };
-    //     }
-    //     return item;
-    //   }),
-    // );
-  };
+  }, []);
+
+  const speakerListFiltered = isLoading ? [] : newSpeakerList;
 
   if (isLoading) return <div>Loading...</div>;
   return (
